@@ -4,3 +4,5 @@
 # создающиеся папки после компиляции
 tic-tac-toe-cli/game/bin/*
 tic-tac-toe-cli/game/obj/*
+tic-tac-toe-cli/agent/bin/*
+tic-tac-toe-cli/agent/obj/*

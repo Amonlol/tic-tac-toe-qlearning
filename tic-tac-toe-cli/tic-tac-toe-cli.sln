@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "game", "game\game.csproj", "{E5F30C85-FD43-40C8-9BDC-30B626317C56}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "agent", "agent\agent.csproj", "{F253687F-D4C1-43FD-B783-847EB2197A02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,10 +17,10 @@ Global
 		{E5F30C85-FD43-40C8-9BDC-30B626317C56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5F30C85-FD43-40C8-9BDC-30B626317C56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5F30C85-FD43-40C8-9BDC-30B626317C56}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F861C9C2-F373-4474-9148-4E51EFC52020}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F861C9C2-F373-4474-9148-4E51EFC52020}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F861C9C2-F373-4474-9148-4E51EFC52020}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F861C9C2-F373-4474-9148-4E51EFC52020}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F253687F-D4C1-43FD-B783-847EB2197A02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F253687F-D4C1-43FD-B783-847EB2197A02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F253687F-D4C1-43FD-B783-847EB2197A02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F253687F-D4C1-43FD-B783-847EB2197A02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
