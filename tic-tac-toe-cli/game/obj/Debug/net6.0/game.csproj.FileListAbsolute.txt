@@ -1,0 +1,15 @@
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\bin\Debug\net6.0\game.exe
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\bin\Debug\net6.0\game.deps.json
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\bin\Debug\net6.0\game.runtimeconfig.json
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\bin\Debug\net6.0\game.dll
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\bin\Debug\net6.0\game.pdb
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\game.csproj.AssemblyReference.cache
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\game.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\game.AssemblyInfoInputs.cache
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\game.AssemblyInfo.cs
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\game.csproj.CoreCompileInputs.cache
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\game.dll
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\refint\game.dll
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\game.pdb
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\game.genruntimeconfig.cache
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\game\obj\Debug\net6.0\ref\game.dll

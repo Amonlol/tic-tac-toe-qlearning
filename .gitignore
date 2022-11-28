@@ -1,1 +1,3 @@
 .vs
+tic-tac-toe-cli/game/bin/*
+tic-tac-toe-cli/game/obj/*
