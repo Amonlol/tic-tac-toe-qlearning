@@ -1,3 +1,6 @@
+# скрытая папка vs
 .vs
+
+# создающиеся папки после компиляции
 tic-tac-toe-cli/game/bin/*
 tic-tac-toe-cli/game/obj/*

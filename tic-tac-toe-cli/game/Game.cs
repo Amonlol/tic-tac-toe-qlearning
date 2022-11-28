@@ -33,7 +33,6 @@ namespace game
 
 		#endregion
 
-
 		#region Поля
 
 		private Cell[][] gameField;
@@ -338,7 +337,7 @@ namespace game
 			Players winnerVertical = CheckVertical();
 			if (winnerVertical != Players.N)
 			{
-				if (winnerHorizontal == Players.X)
+				if (winnerVertical == Players.X)
 				{
 					state = GameStates.Ended_With_X_Win;
 				}
