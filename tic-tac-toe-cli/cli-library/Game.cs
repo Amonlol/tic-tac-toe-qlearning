@@ -4,32 +4,37 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace game
+namespace cli_library
 {
 	public class Game
 	{
 		#region Перечисления
 
-		private enum GameStates
+		public enum GameStates
 		{
 			Playing,
 			Ended_With_Draw,
 			Ended_With_X_Win,
 			Ended_With_O_Win
 		}
-
-		private enum Players
+		public enum Players
 		{
 			N,
 			X,
 			O
+		}
+		public enum GameTypes
+		{
+			TwoPlayers,
+			BotTrainingAsX,
+			BotTrainingAsO
 		}
 
 		#endregion
 
 		#region Список доступных (пустых) ячеек
 
-		List<Cell> AvailableCellsList;
+		public List<Cell> AvailableCellsList;
 
 		#endregion
 
@@ -40,12 +45,24 @@ namespace game
 		private GameStates state;
 		private Players currentPlayer;
 		private Players winner;
+		private GameTypes gameType;
+
+		#endregion
+
+		#region Свойства
+
+		public GameStates State { get => state; }
+		public Players CurrentPlayer { get => currentPlayer; }
+		public Players Winner { get => winner; }
+		public GameTypes GameType { get => gameType; }
+		public bool BotMadeMove { get; set; } = false;
+		public Cell BotLatestMove { get; set; }
 
 		#endregion
 
 		#region Структуры
 
-		private struct Cell
+		public struct Cell
 		{
 			private int x, y;
 			private Players value;
@@ -101,6 +118,11 @@ namespace game
 			GenerateNewGame();
 		}
 
+		public Game(GameTypes gameType) : this()
+		{
+			this.gameType = gameType;
+		}
+
 		#region Методы
 
 		/// <summary>
@@ -122,81 +144,106 @@ namespace game
 			AvailableCellsList = new List<Cell>(9);
 
 			InitializeAvailableCells();
-
 		}
 
 		/// <summary>
 		/// Метод для начала игры
 		/// </summary>
-		public void StartGame()
+		public bool StartGame()
 		{
-			while (state == GameStates.Playing)
+			_ = Task.Run(async () =>
 			{
-				Console.Clear();
-				//Выводим текущее игровое поле
-				PrintGameField();
-
-				//Узнаем чей ход
-				string current = currentPlayer.ToString();
-
-				//Просим игрока ввести координаты ячейки
-				Console.WriteLine("\n");
-				Console.WriteLine($"Ход игрока: {current}");
-				Console.WriteLine("\n");
-				Console.WriteLine($"Введите координаты ячейки (в формате <Строка>,<Столбец>, где 0,0 - левый верхний угол), в которую желаете поставить {current}");
-				Console.WriteLine("Доступны ячейки:");
-				PrintAvailableCells();
-
-				//Считывание ввода с клавиатуры
-				string[] coordinates = Console.ReadLine().Split(',');
-
-				try
+				while (state == GameStates.Playing)
 				{
-					Cell myCell = new Cell(Convert.ToInt32(coordinates[0]), Convert.ToInt32(coordinates[1]), currentPlayer);
+					Console.Clear();
+					//Выводим текущее игровое поле
+					PrintGameField();
 
-					//Обновление доступных ячеек
-					if (UpdateAvailableCells(myCell))
+					//Узнаем чей ход
+					string current = currentPlayer.ToString();
+
+					//Просим игрока ввести координаты ячейки
+					Console.WriteLine("\n");
+					Console.WriteLine($"Ход игрока: {current}");
+					Console.WriteLine("\n");
+					Console.WriteLine($"Введите координаты ячейки (в формате <Строка>,<Столбец>, где 0,0 - левый верхний угол), в которую желаете поставить {current}");
+					Console.WriteLine("Доступны ячейки:");
+					PrintAvailableCells();
+
+					//string[] coordinates = new string[2];
+
+					//Проверяем является ли текущий ход ходом бота
+					if ((this.CurrentPlayer == Players.X && this.GameType == GameTypes.BotTrainingAsX) ||
+						(this.CurrentPlayer == Players.O && this.GameType == GameTypes.BotTrainingAsO))
 					{
-						//Поиск победителя или взаимоблокировки (ничьи)
-						CheckWinner();
-
-						if (currentPlayer == Players.N || state != GameStates.Playing)
+						while (!BotMadeMove)
 						{
-							break;
+							Thread.Sleep(1000);
 						}
+
+						if (UpdateAvailableCells(BotLatestMove))
+						{
+							CheckWinner();
+						}
+
+						BotMadeMove = false;
 					}
 					else
 					{
-						Console.WriteLine("Данная ячейка уже заполнена, выберите другую!");
+						//Считывание ввода с клавиатуры
+						string[] coordinates = Console.ReadLine().Split(',');
+
+						try
+						{
+							Cell myCell = new Cell(Convert.ToInt32(coordinates[0]), Convert.ToInt32(coordinates[1]), currentPlayer);
+
+							//Обновление доступных ячеек
+							if (UpdateAvailableCells(myCell))
+							{
+								//Поиск победителя или взаимоблокировки (ничьи)
+								CheckWinner();
+
+								if (currentPlayer == Players.N || state != GameStates.Playing)
+								{
+									break;
+								}
+							}
+							else
+							{
+								Console.WriteLine("Данная ячейка уже заполнена, выберите другую!");
+							}
+
+						}
+						catch (Exception)
+						{
+							Console.WriteLine("!!!НЕВЕРНО ВВЕДЕНЫ КООРДИНАТЫ!!!");
+						}
 					}
 
 				}
-				catch (Exception)
-				{
-					Console.WriteLine("!!!НЕВЕРНО ВВЕДЕНЫ КООРДИНАТЫ!!!");
-				}
-			}
 
-			Console.Clear();
-			Console.WriteLine("Игра окончена!");
-			PrintGameField();
+				Console.Clear();
+				Console.WriteLine("Игра окончена!");
+				PrintGameField();
 
-			if (state == GameStates.Ended_With_Draw)
-			{
-				Console.WriteLine("Ничья!");
-			}
-			else
-			{
-				if (state == GameStates.Ended_With_X_Win)
+				if (state == GameStates.Ended_With_Draw)
 				{
-					winner = Players.X;
+					Console.WriteLine("Ничья!");
 				}
 				else
 				{
-					winner = Players.O;
+					if (state == GameStates.Ended_With_X_Win)
+					{
+						winner = Players.X;
+					}
+					else
+					{
+						winner = Players.O;
+					}
+					Console.WriteLine($"Победитель: {winner}!");
 				}
-				Console.WriteLine($"Победитель: {winner}!");
-			}
+			});
+			return true;
 		}
 
 		/// <summary>

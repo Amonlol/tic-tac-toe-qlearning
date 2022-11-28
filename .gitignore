@@ -1,8 +1,9 @@
 # скрытая папка vs
 .vs
+tic-tac-toe-cli/.vs
 
 # создающиеся папки после компиляции
-tic-tac-toe-cli/game/bin/*
-tic-tac-toe-cli/game/obj/*
-tic-tac-toe-cli/agent/bin/*
-tic-tac-toe-cli/agent/obj/*
+tic-tac-toe-cli/cli-library/bin/*
+tic-tac-toe-cli/cli-library/obj/*
+tic-tac-toe-cli/main/bin/*
+tic-tac-toe-cli/main/obj/*
