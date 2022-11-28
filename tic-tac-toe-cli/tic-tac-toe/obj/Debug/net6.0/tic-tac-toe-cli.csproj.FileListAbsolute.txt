@@ -1,0 +1,15 @@
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\bin\Debug\net6.0\tic-tac-toe-cli.exe
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\bin\Debug\net6.0\tic-tac-toe-cli.deps.json
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\bin\Debug\net6.0\tic-tac-toe-cli.runtimeconfig.json
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\bin\Debug\net6.0\tic-tac-toe-cli.dll
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\bin\Debug\net6.0\tic-tac-toe-cli.pdb
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\tic-tac-toe-cli.csproj.AssemblyReference.cache
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\tic-tac-toe-cli.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\tic-tac-toe-cli.AssemblyInfoInputs.cache
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\tic-tac-toe-cli.AssemblyInfo.cs
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\tic-tac-toe-cli.csproj.CoreCompileInputs.cache
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\tic-tac-toe-cli.dll
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\refint\tic-tac-toe-cli.dll
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\tic-tac-toe-cli.pdb
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\tic-tac-toe-cli.genruntimeconfig.cache
+C:\Users\efrem\Desktop\Институт\!Мага\Искусственный интеллект\tic-tac-toe-qlearning\tic-tac-toe-cli\tic-tac-toe\obj\Debug\net6.0\ref\tic-tac-toe-cli.dll

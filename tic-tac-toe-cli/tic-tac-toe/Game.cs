@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace tic_tac_toe
+namespace tic_tac_toe_cli
 {
 	public class Game
 	{
@@ -64,9 +64,9 @@ namespace tic_tac_toe
 
 			public bool ChangeValue(Players newValue)
 			{
-				if (this.value == Players.N)
+				if (value == Players.N)
 				{
-					this.value = newValue;
+					value = newValue;
 					return true;
 				}
 
@@ -110,17 +110,17 @@ namespace tic_tac_toe
 		private void GenerateNewGame()
 		{
 
-			this.gameField = new Cell[3][]
+			gameField = new Cell[3][]
 									{
 										new Cell[3] {new Cell(0,0,Players.N),new Cell(0,1,Players.N),new Cell(0,2,Players.N)},
 										new Cell[3] {new Cell(1,0,Players.N),new Cell(1,1,Players.N),new Cell(1,2,Players.N)},
 										new Cell[3] {new Cell(2,0,Players.N),new Cell(2,1,Players.N),new Cell(2,2,Players.N)}
 									};
 
-			this.state = GameStates.Playing;
-			this.currentPlayer = Players.X;
-			this.winner = Players.N;
-			this.AvailableCellsList = new List<Cell>(9);
+			state = GameStates.Playing;
+			currentPlayer = Players.X;
+			winner = Players.N;
+			AvailableCellsList = new List<Cell>(9);
 
 			InitializeAvailableCells();
 
@@ -138,7 +138,7 @@ namespace tic_tac_toe
 				PrintGameField();
 
 				//Узнаем чей ход
-				string current = this.currentPlayer.ToString();
+				string current = currentPlayer.ToString();
 
 				//Просим игрока ввести координаты ячейки
 				Console.WriteLine("\n");
@@ -154,14 +154,14 @@ namespace tic_tac_toe
 				try
 				{
 					Cell myCell = new Cell(Convert.ToInt32(coordinates[0]), Convert.ToInt32(coordinates[1]), currentPlayer);
-					
+
 					//Обновление доступных ячеек
 					if (UpdateAvailableCells(myCell))
 					{
 						//Поиск победителя или взаимоблокировки (ничьи)
 						CheckWinner();
 
-						if (this.currentPlayer == Players.N || this.state != GameStates.Playing)
+						if (currentPlayer == Players.N || state != GameStates.Playing)
 						{
 							break;
 						}
@@ -182,13 +182,13 @@ namespace tic_tac_toe
 			Console.WriteLine("Игра окончена!");
 			PrintGameField();
 
-			if (this.state == GameStates.Ended_With_Draw)
+			if (state == GameStates.Ended_With_Draw)
 			{
 				Console.WriteLine("Ничья!");
 			}
 			else
 			{
-				if (this.state == GameStates.Ended_With_X_Win)
+				if (state == GameStates.Ended_With_X_Win)
 				{
 					winner = Players.X;
 				}
@@ -239,7 +239,7 @@ namespace tic_tac_toe
 				}
 
 				field.AppendLine(" |     |     |     |");
-				field.AppendLine(String.Format("{3}|  {0}  |  {1}  |  {2}  |", charField[0], charField[1], charField[2], i));
+				field.AppendLine(string.Format("{3}|  {0}  |  {1}  |  {2}  |", charField[0], charField[1], charField[2], i));
 				field.AppendLine(" |_____|_____|_____|");
 			}
 
@@ -273,7 +273,7 @@ namespace tic_tac_toe
 			{
 				if (cell.Value == Players.N)
 				{
-					cells.Append(String.Format($"[{cell.X},{cell.Y}],"));
+					cells.Append(string.Format($"[{cell.X},{cell.Y}],"));
 				}
 			}
 
@@ -315,7 +315,7 @@ namespace tic_tac_toe
 		{
 			if (AvailableCellsList.Count < 1)
 			{
-				this.currentPlayer = Players.N;
+				currentPlayer = Players.N;
 			}
 
 			//Проверка горизонтальных линий
@@ -324,11 +324,11 @@ namespace tic_tac_toe
 			{
 				if (winnerHorizontal == Players.X)
 				{
-					this.state = GameStates.Ended_With_X_Win;
+					state = GameStates.Ended_With_X_Win;
 				}
 				else if (winnerHorizontal == Players.O)
 				{
-					this.state = GameStates.Ended_With_O_Win;
+					state = GameStates.Ended_With_O_Win;
 				}
 
 				return;
@@ -340,11 +340,11 @@ namespace tic_tac_toe
 			{
 				if (winnerHorizontal == Players.X)
 				{
-					this.state = GameStates.Ended_With_X_Win;
+					state = GameStates.Ended_With_X_Win;
 				}
 				else if (winnerVertical == Players.O)
 				{
-					this.state = GameStates.Ended_With_O_Win;
+					state = GameStates.Ended_With_O_Win;
 				}
 
 				return;
@@ -356,11 +356,11 @@ namespace tic_tac_toe
 			{
 				if (winnerDiagonal == Players.X)
 				{
-					this.state = GameStates.Ended_With_X_Win;
+					state = GameStates.Ended_With_X_Win;
 				}
 				else if (winnerDiagonal == Players.O)
 				{
-					this.state = GameStates.Ended_With_O_Win;
+					state = GameStates.Ended_With_O_Win;
 				}
 
 				return;

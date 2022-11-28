@@ -1,4 +1,4 @@
-﻿namespace tic_tac_toe
+﻿namespace tic_tac_toe_cli
 {
 	internal class Program
 	{

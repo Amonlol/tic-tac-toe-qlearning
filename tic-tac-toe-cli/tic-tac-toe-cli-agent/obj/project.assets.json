@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\efrem\\Desktop\\Институт\\!Мага\\Искусственный интеллект\\tic-tac-toe-qlearning\\tic-tac-toe-cli\\tic-tac-toe\\tic-tac-toe-cli.csproj",
-      "projectName": "tic-tac-toe-cli",
-      "projectPath": "C:\\Users\\efrem\\Desktop\\Институт\\!Мага\\Искусственный интеллект\\tic-tac-toe-qlearning\\tic-tac-toe-cli\\tic-tac-toe\\tic-tac-toe-cli.csproj",
+      "projectUniqueName": "C:\\Users\\efrem\\Desktop\\Институт\\!Мага\\Искусственный интеллект\\tic-tac-toe-qlearning\\tic-tac-toe-cli\\tic-tac-toe-cli-agent\\tic-tac-toe-cli-agent.csproj",
+      "projectName": "tic-tac-toe-cli-agent",
+      "projectPath": "C:\\Users\\efrem\\Desktop\\Институт\\!Мага\\Искусственный интеллект\\tic-tac-toe-qlearning\\tic-tac-toe-cli\\tic-tac-toe-cli-agent\\tic-tac-toe-cli-agent.csproj",
       "packagesPath": "C:\\Users\\efrem\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\efrem\\Desktop\\Институт\\!Мага\\Искусственный интеллект\\tic-tac-toe-qlearning\\tic-tac-toe-cli\\tic-tac-toe\\obj\\",
+      "outputPath": "C:\\Users\\efrem\\Desktop\\Институт\\!Мага\\Искусственный интеллект\\tic-tac-toe-qlearning\\tic-tac-toe-cli\\tic-tac-toe-cli-agent\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\efrem\\AppData\\Roaming\\NuGet\\NuGet.Config",
