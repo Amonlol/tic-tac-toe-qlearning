@@ -26,9 +26,16 @@ namespace cli_library
 
 		#endregion
 
+		#region Поля
+
+		int Q;
+
+		#endregion
+
 		#region Объекты
 
 		public Dictionary<string, double> Policy;
+		public Game.Cell[][] GameField;
 
 		#endregion
 
@@ -100,20 +107,98 @@ namespace cli_library
 			File.WriteAllText(PATH_TO_JSON_POLICY, json);
 		}
 
-		public Game.Cell MakeMove(List<Game.Cell> AvailableCellsList)
+		public Game.Cell MakeMove(List<Game.Cell> AvailableCellsList, Game.Players whoAmI)
 		{
-
-			//exploration
-			//var rnd = new Random();
-			//if (rnd.Next(1, 100) <= EPS)
-			//{
-
-			//}
-
-			//exploitation
-
 			var rnd = new Random();
-			return AvailableCellsList[rnd.Next(0, AvailableCellsList.Count - 1)];
+			Game.Cell myMove = new Game.Cell();
+
+			if (rnd.Next(1, 100) <= EPS)
+			{
+				//exploration
+				myMove = AvailableCellsList[rnd.Next(0, AvailableCellsList.Count - 1)];
+				myMove.ChangeValue(whoAmI);
+			}
+			else
+			{
+				//exploitation
+				int value_max = -999;
+				var NextBoard = AvailableCellsList;
+				string currentState = GenerateStringOfCurrentState(whoAmI);
+
+				if (Policy.ContainsKey(currentState))
+				{
+					//myMove = 
+				}
+				else
+				{
+
+				}
+			}
+
+			//var rnd = new Random();
+			//Game.Cell myMove = AvailableCellsList[rnd.Next(0, AvailableCellsList.Count - 1)];
+			//myMove.ChangeValue(whoAmI);
+
+			return myMove;
+		}
+
+		private string GenerateStringOfCurrentState(Game.Players whoAmI)
+		{
+			StringBuilder sb = new StringBuilder();
+
+			if (whoAmI == Game.Players.X)
+			{
+				sb.Append(0);
+			}
+			else
+			{
+				sb.Append(1);
+			}
+
+			foreach (var cells in GameField)
+			{
+				foreach (var cell in cells)
+				{
+					sb.Append(cell.Value);
+				}
+			}
+
+			return sb.ToString();
+		}
+
+		private string GetBestNextState(string currentState, Game.Players whoAmI)
+		{
+			double bestMoveValue = -999;
+			string bestMoveState = "0000000000";
+
+			foreach (var p in Policy)
+			{
+				for (int i = 0; i < p.Key.Length; i++)
+				{
+					int diff = 0;
+					if (currentState[i] != p.Key[i])
+					{
+						diff++;
+					}
+
+					//Если следующий шаг отличается от предыдущего больше чем на 1
+					if (diff > 1)
+					{
+						break;
+					}
+
+					if ((i + 1) == p.Key.Length)
+					{
+						if (bestMoveValue < p.Value)
+						{
+							bestMoveValue = p.Value;
+							bestMoveState = p.Key;
+						}
+					}
+				}
+			}
+
+			return bestMoveState;
 		}
 		#endregion
 	}

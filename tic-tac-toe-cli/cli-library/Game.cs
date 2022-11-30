@@ -57,6 +57,7 @@ namespace cli_library
 		public GameTypes GameType { get => gameType; }
 		public bool BotMadeMove { get; set; } = false;
 		public Cell BotLatestMove { get; set; }
+		public Cell[][] GameField { get => gameField; }
 
 		#endregion
 
@@ -178,7 +179,7 @@ namespace cli_library
 					{
 						while (!BotMadeMove)
 						{
-							Thread.Sleep(1000);
+							Thread.Sleep(100);
 						}
 
 						if (UpdateAvailableCells(BotLatestMove))

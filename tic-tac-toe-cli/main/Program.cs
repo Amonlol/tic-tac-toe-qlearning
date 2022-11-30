@@ -63,12 +63,19 @@ namespace main
 
 		static void StartAgentTrainingAsX()
 		{
-			while (true)
+			while (game.State == Game.GameStates.Playing)
 			{
 				if (game.CurrentPlayer == Game.Players.X && game.GameType == Game.GameTypes.BotTrainingAsX)
 				{
-					game.BotLatestMove = agent.MakeMove(game.AvailableCellsList);
+					game.BotLatestMove = agent.MakeMove(game.AvailableCellsList, Game.Players.X);
 					game.BotMadeMove = true;
+					agent.GameField = game.GameField;
+				}
+				else if (game.CurrentPlayer == Game.Players.O && game.GameType == Game.GameTypes.BotTrainingAsO)
+				{
+					game.BotLatestMove = agent.MakeMove(game.AvailableCellsList, Game.Players.O);
+					game.BotMadeMove = true;
+					agent.GameField = game.GameField;
 				}
 			}
 		}
