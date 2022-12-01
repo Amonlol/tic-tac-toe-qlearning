@@ -5,43 +5,60 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.IO;
+using System.Security;
+using System.Security.AccessControl;
 
 namespace cli_library
 {
-	public class Agent
+	public class Agent : IPlayer
 	{
 		#region Константы
 
-		const double GAMMA = 0.75; //gamma
-		const double ALPHA = 0.01; //alpha
-		const double EPS = 0.2; //epsilon
+		const double GAMMA = 0.75; //gamma - коэффициент дисконтирования показывает значимость наград в долгосрочной перспективе
+		const double ALPHA = 0.01; //alpha - скорость обучения агента
+		const double EPS = 0.3; //epsilon - шанс случайного выбора - exploration
 
 		const double WIN_REWARD = 10;
 		const double DRAW_REWARD = 1;
 		const double LOSE_REWARD = -20;
 
-		const string JSON_POLICY_FILE = @"cli-library\policy.json";
-		static string PATH_TO_JSON_POLICY = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.Parent.FullName,
-																		 JSON_POLICY_FILE);
+		const string JSON_QTABLE_FILE = @"cli-library\qtable.json";
+		static string PATH_TO_JSON_QTABLE = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.Parent.FullName,
+																		 JSON_QTABLE_FILE);
 
 		#endregion
 
 		#region Поля
 
-		int Q;
+		public bool canPlay;
+		IPlayer.Players whoAmI;
 
 		#endregion
 
 		#region Объекты
 
-		public Dictionary<string, double> Policy;
+		public Dictionary<string, Dictionary<Game.Cell, double>> QTable;
 		public Game.Cell[][] GameField;
+		public Queue<State> StateHistory;
+
+		#endregion
+
+		#region События
+
+		public event IPlayer.PlayerHandler PlayerChanged;
+		public event IPlayer.GameStateHandler GameStateChanged;
 
 		#endregion
 
 		public Agent()
 		{
 			Initialize();
+			GetAgentInfo();
+		}
+
+		public Agent(IPlayer.Players whoAmI) : this()
+		{
+			this.whoAmI = whoAmI;
 		}
 
 		#region Методы
@@ -53,6 +70,15 @@ namespace cli_library
 		{
 			GetPolicyData();
 			SavePolicyData();
+			ClearHistoryMoves();
+		}
+
+		/// <summary>
+		/// Очистка истории ходов для данной игры
+		/// </summary>
+		public void ClearHistoryMoves()
+		{
+			StateHistory = new Queue<State>();
 		}
 
 		/// <summary>
@@ -69,7 +95,7 @@ namespace cli_library
 			sb.AppendLine($"Win reward: {WIN_REWARD}");
 			sb.AppendLine($"Draw reward: {DRAW_REWARD}");
 			sb.AppendLine($"Lose reward: {LOSE_REWARD}");
-			sb.AppendLine($"Policy path: {PATH_TO_JSON_POLICY}");
+			sb.AppendLine($"Policy path: {PATH_TO_JSON_QTABLE}");
 
 			return sb.ToString();
 		}
@@ -81,78 +107,92 @@ namespace cli_library
 		public string GetPolicyData()
 		{
 			string json;
-			this.Policy = new Dictionary<string, double>();
+			this.QTable = new Dictionary<string, Dictionary<Game.Cell, double>>();
 
 			try
 			{
-				json = File.ReadAllText(PATH_TO_JSON_POLICY);
-				this.Policy = JsonSerializer.Deserialize<Dictionary<string, double>>(json);
+				json = File.ReadAllText(PATH_TO_JSON_QTABLE);
+				this.QTable = JsonSerializer.Deserialize<Dictionary<string, Dictionary<Game.Cell, double>>>(json);
 				return json;
 			}
 			catch (Exception)
 			{
-				json = JsonSerializer.Serialize(this.Policy, new JsonSerializerOptions { WriteIndented = true });
-				File.Delete(PATH_TO_JSON_POLICY);
-				File.WriteAllText(PATH_TO_JSON_POLICY, json);
+				json = JsonSerializer.Serialize(this.QTable, new JsonSerializerOptions { WriteIndented = true });
+				File.Delete(PATH_TO_JSON_QTABLE);
+				File.WriteAllText(PATH_TO_JSON_QTABLE, json);
 				return json;
 			}
 		}
 
 		/// <summary>
-		/// Сохранение словаря с политиками в файл policy.json
+		/// Сохранение словаря с политиками в файл qtable.json
 		/// </summary>
 		public void SavePolicyData()
 		{
-			string json = JsonSerializer.Serialize(this.Policy, new JsonSerializerOptions { WriteIndented = true });
-			File.WriteAllText(PATH_TO_JSON_POLICY, json);
+			string json = JsonSerializer.Serialize(this.QTable, new JsonSerializerOptions { WriteIndented = true });
+			File.WriteAllText(PATH_TO_JSON_QTABLE, json);
 		}
 
-		public Game.Cell MakeMove(List<Game.Cell> AvailableCellsList, Game.Players whoAmI)
+		/// <summary>
+		/// Генерация нового хода
+		/// </summary>
+		/// <param name="AvailableCellsList">Список доступных ячеек</param>
+		/// <returns>Игровую ячейку, найденную по алгоритму</returns>
+		public Game.Cell MakeMove(List<Game.Cell> AvailableCellsList)
 		{
 			var rnd = new Random();
-			Game.Cell myMove = new Game.Cell();
 
-			if (rnd.Next(1, 100) <= EPS)
+			//Попытка получить следующий ход
+			string currentState = GenerateStringOfCurrentState();
+			//exploration
+			double q;
+			Game.Cell NextMoveCell = GetBestNextMoveCell(currentState, out q);
+
+			//Случайный выбор хода из возможных пустых ячеек с шансом EPS
+			//или если в таблице qtable нет записи следующего хода
+			if (rnd.Next(1, 100) <= EPS || (NextMoveCell.X == -1 && NextMoveCell.Y == -1 && NextMoveCell.Value == IPlayer.Players.N))
 			{
 				//exploration
-				myMove = AvailableCellsList[rnd.Next(0, AvailableCellsList.Count - 1)];
-				myMove.ChangeValue(whoAmI);
+				NextMoveCell = AvailableCellsList[rnd.Next(0, AvailableCellsList.Count - 1)];
+				NextMoveCell.ChangeCellValue(this.whoAmI);
+			}
+
+			//Попытка добавить действие в словарь (если такого еще не было)
+			if (!QTable.ContainsKey(currentState))
+			{
+				QTable.TryAdd(currentState, new Dictionary<Game.Cell, double>() { { NextMoveCell, q } });
 			}
 			else
 			{
-				//exploitation
-				int value_max = -999;
-				var NextBoard = AvailableCellsList;
-				string currentState = GenerateStringOfCurrentState(whoAmI);
-
-				if (Policy.ContainsKey(currentState))
+				foreach (var state in QTable)
 				{
-					//myMove = 
-				}
-				else
-				{
-
+					if (state.Key == currentState && !state.Value.ContainsKey(NextMoveCell))
+					{
+						QTable[currentState].Add(NextMoveCell, q);
+					}
 				}
 			}
 
-			//var rnd = new Random();
-			//Game.Cell myMove = AvailableCellsList[rnd.Next(0, AvailableCellsList.Count - 1)];
-			//myMove.ChangeValue(whoAmI);
-
-			return myMove;
+			//Сохранение старого состояния в кэше
+			StateHistory.Enqueue(new State(q, currentState, NextMoveCell));
+			return NextMoveCell;
 		}
 
-		private string GenerateStringOfCurrentState(Game.Players whoAmI)
+		/// <summary>
+		/// Генерация строки из информации о текущем состоянии
+		/// </summary>
+		/// <returns>Формитированную строку</returns>
+		private string GenerateStringOfCurrentState()
 		{
 			StringBuilder sb = new StringBuilder();
 
-			if (whoAmI == Game.Players.X)
+			if (this.whoAmI == IPlayer.Players.X)
 			{
-				sb.Append(0);
+				sb.Append(1);
 			}
 			else
 			{
-				sb.Append(1);
+				sb.Append(2);
 			}
 
 			foreach (var cells in GameField)
@@ -166,39 +206,85 @@ namespace cli_library
 			return sb.ToString();
 		}
 
-		private string GetBestNextState(string currentState, Game.Players whoAmI)
+		/// <summary>
+		/// Получение ячейки для лучшего хода по известной таблице
+		/// </summary>
+		/// <param name="currentState">Строка с текущим состоянием</param>
+		/// <returns>Ячейку с лучшим показателем Q, либо ячейку для рандомной генерации хода</returns>
+		private Game.Cell GetBestNextMoveCell(string currentState, out double q)
 		{
-			double bestMoveValue = -999;
-			string bestMoveState = "0000000000";
+			Game.Cell bestMoveCell = new Game.Cell(-1, -1, IPlayer.Players.N);
+			q = 0;
 
-			foreach (var p in Policy)
+			//Есть ли данное состояние в qtable
+			if (QTable.ContainsKey(currentState))
 			{
-				for (int i = 0; i < p.Key.Length; i++)
+				foreach (var state in QTable)
 				{
-					int diff = 0;
-					if (currentState[i] != p.Key[i])
+					if (state.Key == currentState)
 					{
-						diff++;
-					}
-
-					//Если следующий шаг отличается от предыдущего больше чем на 1
-					if (diff > 1)
-					{
+						bestMoveCell = state.Value.MaxBy(kvp => kvp.Value).Key;
+						q = state.Value[bestMoveCell];
 						break;
-					}
-
-					if ((i + 1) == p.Key.Length)
-					{
-						if (bestMoveValue < p.Value)
-						{
-							bestMoveValue = p.Value;
-							bestMoveState = p.Key;
-						}
 					}
 				}
 			}
 
-			return bestMoveState;
+			return bestMoveCell;
+		}
+
+		/// <summary>
+		/// Финальный подсчет значений в таблице Q
+		/// </summary>
+		/// <param name="endGameState">Результат игры</param>
+		public void CalculateQValues(IPlayer.GameStates endGameState)
+		{
+			double reward = double.NaN;
+			double nextQ = 0;
+
+			if (endGameState == IPlayer.GameStates.Ended_With_Draw)
+			{
+				reward = DRAW_REWARD;
+			}
+			else if (endGameState == IPlayer.GameStates.Ended_With_X_Win && whoAmI == IPlayer.Players.X ||
+						endGameState == IPlayer.GameStates.Ended_With_O_Win && whoAmI == IPlayer.Players.O)
+			{
+				reward = WIN_REWARD;
+			}
+			else
+			{
+				reward = LOSE_REWARD;
+			}
+
+			//Рассчет Q-значений по факту окончания игры из кэша
+			while (StateHistory.Count > 1)
+			{
+				State state = StateHistory.Dequeue();
+
+				foreach (var qTableStates in QTable)
+				{
+					if (qTableStates.Key == state.currentState)
+					{
+						foreach (var actions in qTableStates.Value)
+						{
+							if (actions.Key == state.myMoveCell)
+							{
+								//Получаем следующее состояние, если оно есть
+								State nextState;
+								if (StateHistory.TryPeek(out nextState))
+								{
+									nextQ = qTableStates.Value.MaxBy(kvp => kvp.Value).Value;
+								}
+								double q = ((1 - ALPHA) * actions.Value + ALPHA * (reward + GAMMA * (nextState.q)));
+								qTableStates.Value[actions.Key] = q;
+								break;
+							}
+						}
+					}
+				}
+			}
+			SavePolicyData();
+			ClearHistoryMoves();
 		}
 		#endregion
 	}

@@ -6,32 +6,8 @@ using System.Threading.Tasks;
 
 namespace cli_library
 {
-	public class Game
+	public class Game : IPlayer
 	{
-		#region Перечисления
-
-		public enum GameStates
-		{
-			Playing,
-			Ended_With_Draw,
-			Ended_With_X_Win,
-			Ended_With_O_Win
-		}
-		public enum Players
-		{
-			N,
-			X,
-			O
-		}
-		public enum GameTypes
-		{
-			TwoPlayers,
-			BotTrainingAsX,
-			BotTrainingAsO
-		}
-
-		#endregion
-
 		#region Список доступных (пустых) ячеек
 
 		public List<Cell> AvailableCellsList;
@@ -42,19 +18,19 @@ namespace cli_library
 
 		private Cell[][] gameField;
 
-		private GameStates state;
-		private Players currentPlayer;
-		private Players winner;
-		private GameTypes gameType;
+		private IPlayer.GameStates state;
+		private IPlayer.Players currentPlayer;
+		private IPlayer.Players winner;
+		private IPlayer.GameTypes gameType;
 
 		#endregion
 
 		#region Свойства
 
-		public GameStates State { get => state; }
-		public Players CurrentPlayer { get => currentPlayer; }
-		public Players Winner { get => winner; }
-		public GameTypes GameType { get => gameType; }
+		public IPlayer.GameStates State { get => state; }
+		public IPlayer.Players CurrentPlayer { get => currentPlayer; }
+		public IPlayer.Players Winner { get => winner; }
+		public IPlayer.GameTypes GameType { get => gameType; }
 		public bool BotMadeMove { get; set; } = false;
 		public Cell BotLatestMove { get; set; }
 		public Cell[][] GameField { get => gameField; }
@@ -66,22 +42,22 @@ namespace cli_library
 		public struct Cell
 		{
 			private int x, y;
-			private Players value;
+			private IPlayer.Players value;
 
 			public int X { get => x; }
 			public int Y { get => y; }
-			public Players Value { get => value; }
+			public IPlayer.Players Value { get => value; }
 
-			public Cell(int x, int y, Players value)
+			public Cell(int x, int y, IPlayer.Players value)
 			{
 				this.x = x;
 				this.y = y;
 				this.value = value;
 			}
 
-			public bool ChangeValue(Players newValue)
+			public bool ChangeCellValue(IPlayer.Players newValue)
 			{
-				if (value == Players.N)
+				if (value == IPlayer.Players.N)
 				{
 					value = newValue;
 					return true;
@@ -114,12 +90,19 @@ namespace cli_library
 
 		#endregion
 
+		#region События
+
+		public event IPlayer.PlayerHandler PlayerChanged;
+		public event IPlayer.GameStateHandler GameStateChanged;
+
+		#endregion
+
 		public Game()
 		{
 			GenerateNewGame();
 		}
 
-		public Game(GameTypes gameType) : this()
+		public Game(IPlayer.GameTypes gameType) : this()
 		{
 			this.gameType = gameType;
 		}
@@ -134,14 +117,14 @@ namespace cli_library
 
 			gameField = new Cell[3][]
 									{
-										new Cell[3] {new Cell(0,0,Players.N),new Cell(0,1,Players.N),new Cell(0,2,Players.N)},
-										new Cell[3] {new Cell(1,0,Players.N),new Cell(1,1,Players.N),new Cell(1,2,Players.N)},
-										new Cell[3] {new Cell(2,0,Players.N),new Cell(2,1,Players.N),new Cell(2,2,Players.N)}
+										new Cell[3] {new Cell(0,0,IPlayer.Players.N),new Cell(0,1,IPlayer.Players.N),new Cell(0,2,IPlayer.Players.N)},
+										new Cell[3] {new Cell(1,0,IPlayer.Players.N),new Cell(1,1,IPlayer.Players.N),new Cell(1,2,IPlayer.Players.N)},
+										new Cell[3] {new Cell(2,0,IPlayer.Players.N),new Cell(2,1,IPlayer.Players.N),new Cell(2,2,IPlayer.Players.N)}
 									};
 
-			state = GameStates.Playing;
-			currentPlayer = Players.X;
-			winner = Players.N;
+			state = IPlayer.GameStates.Playing;
+			currentPlayer = IPlayer.Players.X;
+			winner = IPlayer.Players.N;
 			AvailableCellsList = new List<Cell>(9);
 
 			InitializeAvailableCells();
@@ -152,98 +135,96 @@ namespace cli_library
 		/// </summary>
 		public bool StartGame()
 		{
-			_ = Task.Run(async () =>
+			while (state == IPlayer.GameStates.Playing)
 			{
-				while (state == GameStates.Playing)
-				{
-					Console.Clear();
-					//Выводим текущее игровое поле
-					PrintGameField();
-
-					//Узнаем чей ход
-					string current = currentPlayer.ToString();
-
-					//Просим игрока ввести координаты ячейки
-					Console.WriteLine("\n");
-					Console.WriteLine($"Ход игрока: {current}");
-					Console.WriteLine("\n");
-					Console.WriteLine($"Введите координаты ячейки (в формате <Строка>,<Столбец>, где 0,0 - левый верхний угол), в которую желаете поставить {current}");
-					Console.WriteLine("Доступны ячейки:");
-					PrintAvailableCells();
-
-					//string[] coordinates = new string[2];
-
-					//Проверяем является ли текущий ход ходом бота
-					if ((this.CurrentPlayer == Players.X && this.GameType == GameTypes.BotTrainingAsX) ||
-						(this.CurrentPlayer == Players.O && this.GameType == GameTypes.BotTrainingAsO))
-					{
-						while (!BotMadeMove)
-						{
-							Thread.Sleep(100);
-						}
-
-						if (UpdateAvailableCells(BotLatestMove))
-						{
-							CheckWinner();
-						}
-
-						BotMadeMove = false;
-					}
-					else
-					{
-						//Считывание ввода с клавиатуры
-						string[] coordinates = Console.ReadLine().Split(',');
-
-						try
-						{
-							Cell myCell = new Cell(Convert.ToInt32(coordinates[0]), Convert.ToInt32(coordinates[1]), currentPlayer);
-
-							//Обновление доступных ячеек
-							if (UpdateAvailableCells(myCell))
-							{
-								//Поиск победителя или взаимоблокировки (ничьи)
-								CheckWinner();
-
-								if (currentPlayer == Players.N || state != GameStates.Playing)
-								{
-									break;
-								}
-							}
-							else
-							{
-								Console.WriteLine("Данная ячейка уже заполнена, выберите другую!");
-							}
-
-						}
-						catch (Exception)
-						{
-							Console.WriteLine("!!!НЕВЕРНО ВВЕДЕНЫ КООРДИНАТЫ!!!");
-						}
-					}
-
-				}
-
 				Console.Clear();
-				Console.WriteLine("Игра окончена!");
+				//Выводим текущее игровое поле
 				PrintGameField();
 
-				if (state == GameStates.Ended_With_Draw)
+				//Узнаем чей ход
+				string current = currentPlayer.ToString();
+
+				//Просим игрока ввести координаты ячейки
+				Console.WriteLine("\n");
+				Console.WriteLine($"Ход игрока: {current}");
+				Console.WriteLine("\n");
+				Console.WriteLine($"Введите координаты ячейки (в формате <Строка>,<Столбец>, где 0,0 - левый верхний угол), в которую желаете поставить {current}");
+				Console.WriteLine("Доступны ячейки:");
+				PrintAvailableCells();
+
+				//string[] coordinates = new string[2];
+
+				//Проверяем является ли текущий ход ходом бота
+				if ((this.CurrentPlayer == IPlayer.Players.X && this.GameType == IPlayer.GameTypes.BotTrainingAsX) ||
+					(this.CurrentPlayer == IPlayer.Players.O && this.GameType == IPlayer.GameTypes.BotTrainingAsO))
 				{
-					Console.WriteLine("Ничья!");
+					while (!BotMadeMove)
+					{
+						Thread.Sleep(100);
+					}
+
+					if (UpdateAvailableCells(BotLatestMove))
+					{
+						CheckWinner();
+					}
+
+					BotMadeMove = false;
 				}
 				else
 				{
-					if (state == GameStates.Ended_With_X_Win)
+					//Считывание ввода с клавиатуры
+					string[] coordinates = Console.ReadLine().Split(',');
+
+					try
 					{
-						winner = Players.X;
+						Cell myCell = new Cell(Convert.ToInt32(coordinates[0]), Convert.ToInt32(coordinates[1]), currentPlayer);
+
+						//Обновление доступных ячеек
+						if (UpdateAvailableCells(myCell))
+						{
+							//Поиск победителя или взаимоблокировки (ничьи)
+							CheckWinner();
+
+							if (currentPlayer == IPlayer.Players.N || state != IPlayer.GameStates.Playing)
+							{
+								break;
+							}
+						}
+						else
+						{
+							Console.WriteLine("Данная ячейка уже заполнена, выберите другую!");
+						}
+
 					}
-					else
+					catch (Exception)
 					{
-						winner = Players.O;
+						Console.WriteLine("!!!НЕВЕРНО ВВЕДЕНЫ КООРДИНАТЫ!!!");
 					}
-					Console.WriteLine($"Победитель: {winner}!");
 				}
-			});
+
+			}
+
+			Console.Clear();
+			Console.WriteLine("Игра окончена!");
+			PrintGameField();
+
+			if (state == IPlayer.GameStates.Ended_With_Draw)
+			{
+				Console.WriteLine("Ничья!");
+			}
+			else
+			{
+				if (state == IPlayer.GameStates.Ended_With_X_Win)
+				{
+					winner = IPlayer.Players.X;
+				}
+				else
+				{
+					winner = IPlayer.Players.O;
+				}
+				Console.WriteLine($"Победитель: {winner}!");
+			}
+
 			return true;
 		}
 
@@ -271,11 +252,11 @@ namespace cli_library
 				{
 					Cell cell = line[j];
 
-					if (cell.Value == Players.N)
+					if (cell.Value == IPlayer.Players.N)
 					{
 						charField[j] = '-';
 					}
-					else if (cell.Value == Players.X)
+					else if (cell.Value == IPlayer.Players.X)
 					{
 						charField[j] = 'X';
 					}
@@ -318,7 +299,7 @@ namespace cli_library
 
 			foreach (var cell in AvailableCellsList)
 			{
-				if (cell.Value == Players.N)
+				if (cell.Value == IPlayer.Players.N)
 				{
 					cells.Append(string.Format($"[{cell.X},{cell.Y}],"));
 				}
@@ -340,7 +321,7 @@ namespace cli_library
 		/// </summary>
 		private bool UpdateAvailableCells(Cell myCell)
 		{
-			if (AvailableCellsList.Contains(new Cell(myCell.X, myCell.Y, Players.N)))
+			if (AvailableCellsList.Contains(new Cell(myCell.X, myCell.Y, IPlayer.Players.N)))
 			{
 				foreach (Cell cell in AvailableCellsList)
 				{
@@ -352,7 +333,7 @@ namespace cli_library
 				}
 			}
 
-			return gameField[myCell.X][myCell.Y].ChangeValue(myCell.Value);
+			return gameField[myCell.X][myCell.Y].ChangeCellValue(myCell.Value);
 		}
 
 		/// <summary>
@@ -362,52 +343,52 @@ namespace cli_library
 		{
 			if (AvailableCellsList.Count < 1)
 			{
-				currentPlayer = Players.N;
+				currentPlayer = IPlayer.Players.N;
 			}
 
 			//Проверка горизонтальных линий
-			Players winnerHorizontal = CheckHorizontal();
-			if (winnerHorizontal != Players.N)
+			IPlayer.Players winnerHorizontal = CheckHorizontal();
+			if (winnerHorizontal != IPlayer.Players.N)
 			{
-				if (winnerHorizontal == Players.X)
+				if (winnerHorizontal == IPlayer.Players.X)
 				{
-					state = GameStates.Ended_With_X_Win;
+					state = IPlayer.GameStates.Ended_With_X_Win;
 				}
-				else if (winnerHorizontal == Players.O)
+				else if (winnerHorizontal == IPlayer.Players.O)
 				{
-					state = GameStates.Ended_With_O_Win;
+					state = IPlayer.GameStates.Ended_With_O_Win;
 				}
 
 				return;
 			}
 
 			//Проверка вертикальных линий
-			Players winnerVertical = CheckVertical();
-			if (winnerVertical != Players.N)
+			IPlayer.Players winnerVertical = CheckVertical();
+			if (winnerVertical != IPlayer.Players.N)
 			{
-				if (winnerVertical == Players.X)
+				if (winnerVertical == IPlayer.Players.X)
 				{
-					state = GameStates.Ended_With_X_Win;
+					state = IPlayer.GameStates.Ended_With_X_Win;
 				}
-				else if (winnerVertical == Players.O)
+				else if (winnerVertical == IPlayer.Players.O)
 				{
-					state = GameStates.Ended_With_O_Win;
+					state = IPlayer.GameStates.Ended_With_O_Win;
 				}
 
 				return;
 			}
 
 			//Проверка диагональных линий
-			Players winnerDiagonal = CheckDiagonal();
-			if (winnerDiagonal != Players.N)
+			IPlayer.Players winnerDiagonal = CheckDiagonal();
+			if (winnerDiagonal != IPlayer.Players.N)
 			{
-				if (winnerDiagonal == Players.X)
+				if (winnerDiagonal == IPlayer.Players.X)
 				{
-					state = GameStates.Ended_With_X_Win;
+					state = IPlayer.GameStates.Ended_With_X_Win;
 				}
-				else if (winnerDiagonal == Players.O)
+				else if (winnerDiagonal == IPlayer.Players.O)
 				{
-					state = GameStates.Ended_With_O_Win;
+					state = IPlayer.GameStates.Ended_With_O_Win;
 				}
 
 				return;
@@ -419,8 +400,8 @@ namespace cli_library
 		/// <summary>
 		/// Проверка горизонтальных линий
 		/// </summary>
-		/// <returns>Ничья, Х или O в формате перечисления Players</returns>
-		private Players CheckHorizontal()
+		/// <returns>Ничья, Х или O в формате перечисления IPlayer.Players</returns>
+		private IPlayer.Players CheckHorizontal()
 		{
 			int countX = 0, countO = 0;
 
@@ -428,11 +409,11 @@ namespace cli_library
 			{
 				for (int j = 0; j < gameField[i].Length; j++)
 				{
-					if (gameField[i][j].Value == Players.X)
+					if (gameField[i][j].Value == IPlayer.Players.X)
 					{
 						countX++;
 					}
-					else if (gameField[i][j].Value == Players.O)
+					else if (gameField[i][j].Value == IPlayer.Players.O)
 					{
 						countO++;
 					}
@@ -440,25 +421,25 @@ namespace cli_library
 
 				if (countX == 3)
 				{
-					return Players.X;
+					return IPlayer.Players.X;
 				}
 				else if (countX == 3)
 				{
-					return Players.O;
+					return IPlayer.Players.O;
 				}
 
 				countX = 0;
 				countO = 0;
 			}
 
-			return Players.N;
+			return IPlayer.Players.N;
 		}
 
 		/// <summary>
 		/// Проверка вертикальных линий
 		/// </summary>
-		/// <returns>Ничья, Х или O в формате перечисления Players</returns>
-		private Players CheckVertical()
+		/// <returns>Ничья, Х или O в формате перечисления IPlayer.Players</returns>
+		private IPlayer.Players CheckVertical()
 		{
 			int countX = 0, countO = 0;
 
@@ -467,11 +448,11 @@ namespace cli_library
 			{
 				for (int j = 0; j < gameField[i].Length; j++)
 				{
-					if (gameField[j][i].Value == Players.X)
+					if (gameField[j][i].Value == IPlayer.Players.X)
 					{
 						countX++;
 					}
-					else if (gameField[j][i].Value == Players.O)
+					else if (gameField[j][i].Value == IPlayer.Players.O)
 					{
 						countO++;
 					}
@@ -479,36 +460,36 @@ namespace cli_library
 
 				if (countX == 3)
 				{
-					return Players.X;
+					return IPlayer.Players.X;
 				}
 				else if (countX == 3)
 				{
-					return Players.O;
+					return IPlayer.Players.O;
 				}
 
 				countX = 0;
 				countO = 0;
 			}
 
-			return Players.N;
+			return IPlayer.Players.N;
 		}
 
 		/// <summary>
 		/// Проверка двух диагональных линий
 		/// </summary>
-		/// <returns>Ничья, Х или O в формате перечисления Players</returns>
-		private Players CheckDiagonal()
+		/// <returns>Ничья, Х или O в формате перечисления IPlayer.Players</returns>
+		private IPlayer.Players CheckDiagonal()
 		{
 			int countX = 0, countO = 0;
 
 			//Проверка \ диагонали
 			for (int i = 0; i < gameField.Length; i++)
 			{
-				if (gameField[i][i].Value == Players.X)
+				if (gameField[i][i].Value == IPlayer.Players.X)
 				{
 					countX++;
 				}
-				else if (gameField[i][i].Value == Players.O)
+				else if (gameField[i][i].Value == IPlayer.Players.O)
 				{
 					countO++;
 				}
@@ -516,11 +497,11 @@ namespace cli_library
 
 			if (countX == 3)
 			{
-				return Players.X;
+				return IPlayer.Players.X;
 			}
 			else if (countX == 3)
 			{
-				return Players.O;
+				return IPlayer.Players.O;
 			}
 
 			countO = 0;
@@ -529,11 +510,11 @@ namespace cli_library
 			//Проверка / диагонали
 			for (int i = gameField.Length - 1; i >= 0; i--)
 			{
-				if (gameField[i][Math.Abs(i - 2)].Value == Players.X)
+				if (gameField[i][Math.Abs(i - 2)].Value == IPlayer.Players.X)
 				{
 					countX++;
 				}
-				else if (gameField[i][Math.Abs(i - 2)].Value == Players.O)
+				else if (gameField[i][Math.Abs(i - 2)].Value == IPlayer.Players.O)
 				{
 					countO++;
 				}
@@ -542,14 +523,14 @@ namespace cli_library
 
 			if (countX == 3)
 			{
-				return Players.X;
+				return IPlayer.Players.X;
 			}
 			else if (countX == 3)
 			{
-				return Players.O;
+				return IPlayer.Players.O;
 			}
 
-			return Players.N;
+			return IPlayer.Players.N;
 		}
 
 		/// <summary>
@@ -557,13 +538,13 @@ namespace cli_library
 		/// </summary>
 		private void ChangePlayer()
 		{
-			if (currentPlayer == Players.X)
+			if (currentPlayer == IPlayer.Players.X)
 			{
-				currentPlayer = Players.O;
+				currentPlayer = IPlayer.Players.O;
 			}
-			else if (currentPlayer == Players.O)
+			else if (currentPlayer == IPlayer.Players.O)
 			{
-				currentPlayer = Players.X;
+				currentPlayer = IPlayer.Players.X;
 			}
 		}
 

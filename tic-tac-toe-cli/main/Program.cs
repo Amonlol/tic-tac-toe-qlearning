@@ -11,7 +11,7 @@ namespace main
 		{
 			Console.WriteLine("Выберите режим игры:");
 
-			var gameTypes = Enum.GetValues(typeof(Game.GameTypes));
+			var gameTypes = Enum.GetValues(typeof(IPlayer.GameTypes));
 
 			foreach (var type in gameTypes)
 			{
@@ -34,9 +34,9 @@ namespace main
 
 			StartGame();
 
-			if ((Game.GameTypes)i == Game.GameTypes.BotTrainingAsX)
+			if ((IPlayer.GameTypes)i == IPlayer.GameTypes.BotTrainingAsX)
 			{
-				InitializeAgentTraining();
+				InitializeAgentTraining(IPlayer.Players.X);
 				StartAgentTrainingAsX();
 			}
 		}
@@ -46,38 +46,47 @@ namespace main
 		/// </summary>
 		static void StartGame()
 		{
-			game = new Game(Game.GameTypes.BotTrainingAsX);
+			game = new Game(IPlayer.GameTypes.BotTrainingAsX);
 			game.StartGame();
 		}
 
 		/// <summary>
 		/// Метод для обучения агента через метод с закреплением "Q-Learning"
 		/// </summary>
-		static void InitializeAgentTraining()
+		static void InitializeAgentTraining(IPlayer.Players player)
 		{
-			agent = new Agent();
+			agent = new Agent(player);
+
+			if (player == IPlayer.Players.X)
+			{
+				StartAgentTrainingAsX();
+			}
+			else if (player == IPlayer.Players.O)
+			{
+				//StartAgentTrainingAsO();
+			}
+
 			Console.WriteLine("Начало обучения агента");
 			Console.WriteLine(agent.GetAgentInfo());
 			Console.WriteLine(agent.GetPolicyData());
 		}
 
+		/// <summary>
+		/// Обучение бота игре за Х
+		/// </summary>
 		static void StartAgentTrainingAsX()
 		{
-			while (game.State == Game.GameStates.Playing)
+			while (game.State == IPlayer.GameStates.Playing)
 			{
-				if (game.CurrentPlayer == Game.Players.X && game.GameType == Game.GameTypes.BotTrainingAsX)
+				if (game.CurrentPlayer == IPlayer.Players.X && game.GameType == IPlayer.GameTypes.BotTrainingAsX ||
+					game.CurrentPlayer == IPlayer.Players.O && game.GameType == IPlayer.GameTypes.BotTrainingAsO)
 				{
-					game.BotLatestMove = agent.MakeMove(game.AvailableCellsList, Game.Players.X);
-					game.BotMadeMove = true;
 					agent.GameField = game.GameField;
-				}
-				else if (game.CurrentPlayer == Game.Players.O && game.GameType == Game.GameTypes.BotTrainingAsO)
-				{
-					game.BotLatestMove = agent.MakeMove(game.AvailableCellsList, Game.Players.O);
+					game.BotLatestMove = agent.MakeMove(game.AvailableCellsList);
 					game.BotMadeMove = true;
-					agent.GameField = game.GameField;
 				}
 			}
+			agent.CalculateQValues(game.State);
 		}
 	}
 }
