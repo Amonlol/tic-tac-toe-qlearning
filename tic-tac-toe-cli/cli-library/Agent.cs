@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Security;
 using System.Security.AccessControl;
+using static cli_library.IPlayer;
 
 namespace cli_library
 {
-	public class Agent : IPlayer
+	public class Agent : Player
 	{
 		#region Константы
 
@@ -31,7 +32,6 @@ namespace cli_library
 		#region Поля
 
 		public bool canPlay;
-		IPlayer.Players whoAmI;
 
 		#endregion
 
@@ -43,22 +43,11 @@ namespace cli_library
 
 		#endregion
 
-		#region События
-
-		public event IPlayer.PlayerHandler PlayerChanged;
-		public event IPlayer.GameStateHandler GameStateChanged;
-
-		#endregion
-
-		public Agent()
+		public Agent() : base() { }
+		public Agent(Shapes myShape) : base(myShape, Players.Bot)
 		{
 			Initialize();
 			GetAgentInfo();
-		}
-
-		public Agent(IPlayer.Players whoAmI) : this()
-		{
-			this.whoAmI = whoAmI;
 		}
 
 		#region Методы
@@ -150,11 +139,11 @@ namespace cli_library
 
 			//Случайный выбор хода из возможных пустых ячеек с шансом EPS
 			//или если в таблице qtable нет записи следующего хода
-			if (rnd.Next(1, 100) <= EPS || (NextMoveCell.X == -1 && NextMoveCell.Y == -1 && NextMoveCell.Value == IPlayer.Players.N))
+			if (rnd.Next(1, 100) <= EPS || (NextMoveCell.X == -1 && NextMoveCell.Y == -1 && NextMoveCell.Value == IPlayer.Shapes.N))
 			{
 				//exploration
 				NextMoveCell = AvailableCellsList[rnd.Next(0, AvailableCellsList.Count - 1)];
-				NextMoveCell.ChangeCellValue(this.whoAmI);
+				NextMoveCell.ChangeCellValue(MyShape);
 			}
 
 			//Попытка добавить действие в словарь (если такого еще не было)
@@ -186,7 +175,7 @@ namespace cli_library
 		{
 			StringBuilder sb = new StringBuilder();
 
-			if (this.whoAmI == IPlayer.Players.X)
+			if (MyShape == Shapes.X)
 			{
 				sb.Append(1);
 			}
@@ -213,7 +202,7 @@ namespace cli_library
 		/// <returns>Ячейку с лучшим показателем Q, либо ячейку для рандомной генерации хода</returns>
 		private Game.Cell GetBestNextMoveCell(string currentState, out double q)
 		{
-			Game.Cell bestMoveCell = new Game.Cell(-1, -1, IPlayer.Players.N);
+			Game.Cell bestMoveCell = new Game.Cell(-1, -1, IPlayer.Shapes.N);
 			q = 0;
 
 			//Есть ли данное состояние в qtable
@@ -246,8 +235,8 @@ namespace cli_library
 			{
 				reward = DRAW_REWARD;
 			}
-			else if (endGameState == IPlayer.GameStates.Ended_With_X_Win && whoAmI == IPlayer.Players.X ||
-						endGameState == IPlayer.GameStates.Ended_With_O_Win && whoAmI == IPlayer.Players.O)
+			else if (endGameState == IPlayer.GameStates.Ended_With_X_Win && MyShape == IPlayer.Shapes.X ||
+						endGameState == IPlayer.GameStates.Ended_With_O_Win && MyShape == IPlayer.Shapes.O)
 			{
 				reward = WIN_REWARD;
 			}
