@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using static cli_library.IPlayer;
+﻿using static cli_library.IPlayer;
 
 namespace cli_library
 {
@@ -38,22 +32,24 @@ namespace cli_library
 			Random
 		}
 
-		public Game.Cell MakeMove(List<Game.Cell> AvailableCellsList);
+		public Game.Cell MakeMove(List<Game.Cell> AvailableCellsList, Game.Cell[][] GameField);
+		public Shapes GetMyShape();
+		public Players GetPlayerType();
 
-		public delegate void PlayerHandler(Shapes shape, Players player);
-		public event PlayerHandler PlayerChanged;
-
-		public delegate void GameStateHandler(GameStates gameState);
-		public event GameStateHandler GameStateChanged;
 	}
 
-	public class Player : IPlayer
+	public interface IHandler
+	{
+		public delegate void GameStateHandler(object sender, GameStates gameState, Shapes winner);
+		public event GameStateHandler GameEnded;
+	}
+
+	public class Player : IPlayer, IHandler
 	{
 		public Shapes MyShape;
 		public Players WhoAmI;
 
-		public event PlayerHandler PlayerChanged;
-		public event GameStateHandler GameStateChanged;
+		public event IHandler.GameStateHandler GameEnded;
 
 		public Player() { }
 
@@ -63,9 +59,18 @@ namespace cli_library
 			WhoAmI = whoAmI;
 		}
 
-		public virtual Game.Cell MakeMove(List<Game.Cell> AvailableCellsList)
+		public virtual Game.Cell MakeMove(List<Game.Cell> AvailableCellsList, Game.Cell[][] GameField)
 		{
 			return new Game.Cell();
 		}
+		public Shapes GetMyShape()
+		{
+			return MyShape;
+		}
+		public Players GetPlayerType()
+		{
+			return WhoAmI;
+		}
+
 	}
 }
